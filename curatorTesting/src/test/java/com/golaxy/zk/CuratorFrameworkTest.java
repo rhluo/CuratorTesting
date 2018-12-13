@@ -50,10 +50,10 @@ public class CuratorFrameworkTest {
 
     @Before
     public void before() throws Exception {
-        //server = new TestingServer();
-        //client = CuratorFrameworkFactory.newClient(server.getConnectString(), new ExponentialBackoffRetry(1000, 3));
-        client = CuratorFrameworkFactory
-                .newClient(IP_PORT, new ExponentialBackoffRetry(1000, 3));
+        server = new TestingServer();
+        client = CuratorFrameworkFactory.newClient(server.getConnectString(), new ExponentialBackoffRetry(1000, 3));
+//        client = CuratorFrameworkFactory
+//                .newClient(IP_PORT, new ExponentialBackoffRetry(1000, 3));
         client.start();
         cluster = new TestingCluster(CLIENT_QTY);
         cluster.start();
@@ -103,7 +103,7 @@ public class CuratorFrameworkTest {
         List<CuratorFramework> clients = new ArrayList<CuratorFramework>();
         for (int i = 0;i < instanceQty;i++) {
             CuratorFramework client = CuratorFrameworkFactory.newClient(IP_PORT,
-                    new ExponentialBackoffRetry(1000, 3));
+                    new ExponentialBackoffRetry(1000, 3));//注意这里的client都是带有retry的了
             clients.add(client);
             client.start();
         }
@@ -466,6 +466,7 @@ public class CuratorFrameworkTest {
     public void testSharedCount() throws Exception {
         final int QTY = 5;
         final String PATH = "/examples/counter";
+        client.create().forPath("/examples");
         client.create().forPath(PATH);
 
         final Random rand = new Random();
@@ -521,7 +522,7 @@ public class CuratorFrameworkTest {
 
         //forPath函数指定创建节点的path和保存的数据，path的指定遵循linux文件path格式，创建node时指定的path，
         //父path节点需要存在，否则创建节点失败，比如创建"/parent/child"节点，若不存在节点"parent"，那么创建节点会失败。
-        //client.create().forPath("/example");
+        client.create().forPath("/example");
         client.create().forPath(PATH);
 
         PathChildrenCache cache = new PathChildrenCache(client, PATH, true);
@@ -568,7 +569,8 @@ public class CuratorFrameworkTest {
     @Test
     public void testNodeCache() throws Exception {
         final String PATH = "/example/cache";
-        //client.create().forPath("/example");
+        client.create().forPath("/example");
+        //client.create().forPath(PATH);
 
         final NodeCache cache = new NodeCache(client, PATH);
         cache.start();
